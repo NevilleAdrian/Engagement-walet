@@ -1,4 +1,5 @@
 import 'package:engagementwallet/src/utils/colors.dart';
+import 'package:engagementwallet/values/assets.dart';
 import 'package:engagementwallet/values/padding.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -26,10 +27,10 @@ class OnboardingBackground extends StatelessWidget {
         color: primaryColor,
         child: Stack(
           children: [
-            child,
             showLayout ? bottomChildText : Container(),
             showLayout ? bottomChild : Container(),
-            showLayout ? rightSidedChild : Container()
+            showLayout ? rightSidedChild : Container(),
+            child,
           ],
         ),
       ),
@@ -51,17 +52,17 @@ class OnBoardinglayout extends StatelessWidget {
       showLayout: showLayout,
       rightSidedChild: Align(
         alignment: Alignment.bottomRight,
-        child: SvgPicture.asset('assets/images/svg/man.svg'),
+        child: SvgPicture.asset(Assets.man),
       ),
       bottomChild: Align(
         alignment: Alignment.bottomCenter,
-        child: Image.asset('assets/images/png/onboarding-bg.png'),
+        child: Image.asset(Assets.onboardingBg),
       ),
       bottomChildText: const Align(
         alignment: Alignment.bottomCenter,
         child: Padding(
           padding: EdgeInsets.only(bottom: 20),
-          child: Text('Powered by Izifin technologies.'),
+          child: Text('Powered by Izifin technologies limited.'),
         ),
       ),
       child: child,

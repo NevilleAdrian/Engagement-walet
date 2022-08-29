@@ -1,5 +1,6 @@
-import 'package:afterseven/src/mixin/form_validators.dart';
+import 'package:engagementwallet/src/logic/mixin/form_validators.dart';
 import 'package:rxdart/rxdart.dart';
+
 
 class ValidationBloc extends FormValidators {
   final _emailOnlyController = BehaviorSubject<String>();
@@ -13,7 +14,7 @@ class ValidationBloc extends FormValidators {
   final _ninController = BehaviorSubject<String>();
   final _accNoController = BehaviorSubject<String>();
   final _firstNameController = BehaviorSubject<String>();
-  final _middleNameController = BehaviorSubject<String>();
+  final _userNameController = BehaviorSubject<String>();
   final _lastNameController = BehaviorSubject<String>();
   final _gCodeController = BehaviorSubject<String>();
   final _addressController = BehaviorSubject<String>();
@@ -47,8 +48,8 @@ class ValidationBloc extends FormValidators {
   Stream<String> get firstName =>
       _firstNameController.transform(validateFullNameBloc);
 
-  Stream<String> get middleName =>
-      _middleNameController.transform(validateFullNameBloc);
+  Stream<String> get userName =>
+      _userNameController.transform(validateFullNameBloc);
 
   Stream<String> get lastName =>
       _lastNameController.transform(validateFullNameBloc);
@@ -87,7 +88,7 @@ class ValidationBloc extends FormValidators {
 
   Function(String) get changeFirstName => _firstNameController.sink.add;
 
-  Function(String) get changeMiddleName => _middleNameController.sink.add;
+  Function(String) get changeUserName => _userNameController.sink.add;
 
   Function(String) get changeLastName => _lastNameController.sink.add;
 
@@ -141,8 +142,7 @@ class ValidationBloc extends FormValidators {
     _firstNameController.close();
     _gCodeController.close();
     _addressController.close();
-    _middleNameController.close();
-    _middleNameController.close();
+    _userNameController.close();
     _bvnController.close();
     _ninController.close();
     _accNoController.close();

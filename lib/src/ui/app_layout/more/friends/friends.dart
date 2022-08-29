@@ -1,10 +1,11 @@
 import 'package:checkbox_grouped/checkbox_grouped.dart';
-import 'package:engagementwallet/src/mixin/friends_mixin/friends_mixin.dart';
-import 'package:engagementwallet/src/models/mock_data.dart';
+import 'package:engagementwallet/src/logic/mixin/friends_mixin/friends_mixin.dart';
+import 'package:engagementwallet/src/ui/app_layout/more/friends/add_friend.dart';
 import 'package:engagementwallet/src/utils/colors.dart';
 import 'package:engagementwallet/src/utils/navigationWidget.dart';
 import 'package:engagementwallet/src/utils/sized_boxes.dart';
 import 'package:engagementwallet/src/widgets/custom_button.dart';
+import 'package:engagementwallet/src/widgets/dialogs/dialogs.dart';
 import 'package:engagementwallet/src/widgets/space_divider.dart';
 import 'package:engagementwallet/values/assets.dart';
 import 'package:engagementwallet/values/padding.dart';
@@ -20,16 +21,14 @@ class ShowFriends extends StatefulWidget {
 }
 
 class _ShowFriendsState extends State<ShowFriends> {
-
-
   @override
   void initState() {
     super.initState();
   }
+
   @override
   Widget build(BuildContext context) {
-    FriendsMixin friends = FriendsMixin.friendProvider(context);
-
+    FriendsMixin friends = FriendsMixin.friendProvider(context, listen: true);
 
     return Column(
       children: [
@@ -45,8 +44,7 @@ class _ShowFriendsState extends State<ShowFriends> {
                   color: greyColor,
                 ),
               ),
-              Text('My Friends',
-                  style: textStyleBig.copyWith(fontSize: 26)),
+              Text('My Friends', style: textStyleBig.copyWith(fontSize: 26)),
               Icon(
                 Icons.cancel,
                 color: whiteColor,
@@ -64,18 +62,21 @@ class _ShowFriendsState extends State<ShowFriends> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 100),
-                child: const Text(
-                  'Enter the 6-digit PIN sent via SMS to your number +234 906 1234 567.',
-                  textAlign: TextAlign.center,
-                ),
-              ),
+              // ConstrainedBox(
+              //   constraints: const BoxConstraints(maxWidth: 100),
+              //   child: const Text(
+              //     'Enter the 6-digit PIN sent via SMS to your number +234 906 1234 567.',
+              //     textAlign: TextAlign.center,
+              //   ),
+              // ),
               kNormalHeight,
               SizedBox(
                 height: 500.h,
                 child: ListView.separated(
-                  separatorBuilder: (BuildContext context, int index) => SpaceDivider(height: 40,),
+                  separatorBuilder: (BuildContext context, int index) =>
+                      SpaceDivider(
+                    height: 40,
+                  ),
                   itemCount: friends.friendsList.length,
                   itemBuilder: (BuildContext context, int index) {
                     final friend = friends.friendsList[index];
@@ -92,30 +93,37 @@ class _ShowFriendsState extends State<ShowFriends> {
                             kSmallWidth,
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              children:  [
-                                Text(friend['name']!, style: textStyle400Small,),
-                                Text('@${friend['userName']!}', style: textStyle14Small.copyWith(
-                                    color: darkGreyColor
-                                ),),
+                              children: [
+                                Text(
+                                  friend['name']!,
+                                  style: textStyle400Small,
+                                ),
+                                Text(
+                                  '@${friend['userName']!}',
+                                  style: textStyle14Small.copyWith(
+                                      color: darkGreyColor),
+                                ),
                               ],
                             )
                           ],
                         ),
-                        const Icon(Icons.close, color: Colors.red,)
+                        InkWell(
+                            onTap: () =>
+                                friends.removeItemFromList(friend['id']),
+                            child: const Icon(
+                              Icons.close,
+                              color: Colors.red,
+                            ))
                       ],
                     );
                   },
-
                 ),
               ),
-
               kNormalHeight,
               CustomButton(
                 text: "ADD A NEW FRIEND",
-                onPressed: () => popView(context),
+                onPressed: () => openDialog(context, const AddFriend()),
               ),
-
-
             ],
           ),
         )

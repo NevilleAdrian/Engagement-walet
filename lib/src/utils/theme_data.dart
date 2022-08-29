@@ -1,56 +1,64 @@
+import 'package:engagementwallet/src/utils/colors.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:vpay_merchant_mobile/utils/constants.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+import '../../values/radii.dart';
 
 
 ThemeData myThemeData(BuildContext context) {
   return ThemeData(
-    fontFamily: "BwModelicaCyrillicDEMO",
     primaryColor: primaryColor,
-    accentColor: kAccent,
-    buttonColor: kButtonColor,
-    textTheme: Theme.of(context).textTheme.apply(fontFamily: 'BwModelicaCyrillicDEMO', fontSizeDelta: 1.5),
-    primaryTextTheme: Theme.of(context).textTheme.apply(fontFamily: 'BwModelicaCyrillicDEMO'),
-    accentTextTheme: Theme.of(context).textTheme.apply(fontFamily: 'BwModelicaCyrillicDEMO'),
-    scaffoldBackgroundColor: Colors.white,
-    backgroundColor: Colors.white,
-//    textTheme: TextTheme(bodyText2: TextStyle(color: Colors.black)),
+    colorScheme: ColorScheme.light(
+        primary: primaryColor,
+        secondary:secondaryColor),
+    scaffoldBackgroundColor: whiteColor,
+    backgroundColor: whiteColor,
+    brightness: Brightness.light,
+    fontFamily: GoogleFonts.sourceSansPro().fontFamily,
+    textTheme: GoogleFonts.sourceSansProTextTheme(),
+    visualDensity: VisualDensity.adaptivePlatformDensity,
     inputDecorationTheme: InputDecorationTheme(
-      labelStyle: TextStyle(color: Colors.black.withOpacity(0.5)),
-      contentPadding: EdgeInsets.all(2.0),
-      // focusedBorder: UnderlineInputBorder(
-      //   borderSide: BorderSide(color: kGoogleBorderColor, width: 1),
-      // ),
-      // enabledBorder: UnderlineInputBorder(
-      //   borderSide:
-      //       BorderSide(color: kGoogleBorderColor.withOpacity(0.3), width: 1),
-      // ),
+      labelStyle: TextStyle(color: greyColor, fontSize: 14),
+      hintStyle: TextStyle(color: blackColor, fontSize: 14),
+      fillColor: whiteColor,
+      enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(
+            color: primaryColor,
+            width: 1,
+          ),
+          borderRadius: Radii.k10pxRadius),
+      disabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(
+            color: primaryColor,
+            width: 1,
+          ),
+          borderRadius: Radii.k10pxRadius),
+      focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(
+              color: primaryColor,
+              width: 1.5,
+              style: BorderStyle.solid),
+          borderRadius: Radii.k10pxRadius),
+      border: OutlineInputBorder(
+          borderSide: BorderSide(
+            color: primaryColor,
+            width: 1,
+          ),
+          borderRadius: Radii.k10pxRadius),
     ),
-
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ButtonStyle(
+        backgroundColor: MaterialStateProperty.all(primaryColor),
+      ),
+    ),
     buttonTheme: ButtonThemeData(
-      buttonColor: kButtonColor,
-      height: 50,
-      // minWidth: double.infinity,
-
-      textTheme: ButtonTextTheme.primary,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(100.0),
+      colorScheme: ColorScheme.light(
+        primary: primaryColor,
       ),
-    ),
-    canvasColor: Colors.transparent,
-    appBarTheme: AppBarTheme(
-      brightness: Brightness.light,
-      elevation: 2,
-      color: Colors.white,
-      iconTheme: IconThemeData(color: Colors.black),
-      textTheme: TextTheme(
-        headline6: TextStyle(
-          color: Colors.black,
-          fontSize: 16,
-          fontFamily: "BwModelicaCyrillicDEMO",
-          fontWeight: FontWeight.w500,
-        ),
-      ),
+      splashColor: greyColor,
+      textTheme: ButtonTextTheme.normal,
+      buttonColor: primaryColor,
     ),
   );
 }

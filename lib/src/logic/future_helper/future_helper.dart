@@ -1,5 +1,5 @@
+import 'package:engagementwallet/src/utils/colors.dart';
 import 'package:flutter/material.dart';
-import 'package:skillpaddy/src/utils/colors.dart';
 
 class FutureHelper<T> extends StatelessWidget {
   final Future<T> task;

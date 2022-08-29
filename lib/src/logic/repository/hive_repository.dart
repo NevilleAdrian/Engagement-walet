@@ -1,5 +1,7 @@
-import 'package:hive/hive.dart';
-import 'package:skillpaddy/src/logic/repository/hive_interface.dart';
+
+
+import 'package:engagementwallet/src/logic/repository/hive_interface.dart';
+import 'package:hive_flutter/adapters.dart';
 
 class HiveRepository implements IRepository {
   HiveRepository();
