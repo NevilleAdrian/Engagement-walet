@@ -241,7 +241,7 @@ class _MakePurchaseState extends State<MakePurchase> {
                 firstIcon: Assets.wallet,
                 firstItemText: 'Pay With Wallet',
                 secondIcon: Assets.card,
-                secondItemText: 'Card or Bank Account',
+                secondItemText: 'Card or Bank Accounts',
                 firstItemTap: () => navigate(context, const PayWithWallet()),
                 secondItemTap: () => navigate(context, const CardTransfer()),
               )),
