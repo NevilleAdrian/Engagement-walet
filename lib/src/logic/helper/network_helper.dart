@@ -91,16 +91,13 @@ class NetworkHelper {
   }
 
   ///forgot password
-  Future<dynamic> addAddress(String deliveryAddress) async {
+  Future<dynamic> addAddress(String deliveryAddress, String token) async {
     print('hi');
     var params = {
       "deliveryAddress": deliveryAddress,
     };
 
-    return await postParamRequest(
-      'api/auth/add-address',
-      params,
-    );
+    return await postParamRequest('api/auth/add-address', params, token);
   }
   // //Update Customer Profile
   // Future<dynamic> updateCustomerProfile(
@@ -217,7 +214,7 @@ class NetworkHelper {
 
   ///Get User
   Future<dynamic> getUser(String? token) async {
-    return await getRequest(url: 'customer/profile', token: token);
+    return await getRequest(url: 'api/auth/user-info', token: token);
   }
 
   ///Edit User Profile
@@ -273,6 +270,16 @@ class NetworkHelper {
   ///Get Orders
   Future<dynamic> fetchOrders(String? token) async {
     return await getRequest(url: 'api/order/get-orders', token: token);
+  }
+
+  ///Get Address
+  Future<dynamic> fetchAddress(String? token) async {
+    return await getRequest(url: 'api/auth/get-all-addresses', token: token);
+  }
+
+  ///GetUsers
+  Future<dynamic> fetchUsers(String? token) async {
+    return await getRequest(url: 'api/auth/user-info', token: token);
   }
 
   ///Get Orders

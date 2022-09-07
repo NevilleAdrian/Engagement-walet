@@ -23,6 +23,8 @@ class _ProfileSettingsState extends State<ProfileSettings> {
 
   @override
   Widget build(BuildContext context) {
+    AuthMixin auth = AuthMixin.auth(context, listen: true);
+
     return Column(
       children: [
         Padding(
@@ -68,11 +70,17 @@ class _ProfileSettingsState extends State<ProfileSettings> {
                   onPressed: () async {
                     print('hi');
                     await AuthMixin.auth(context).updateCustomerProfile(
-                        emailController.text,
+                        emailController.text == null
+                            ? auth.user.email!
+                            : emailController.text,
                         '',
-                        firstNameController.text,
-                        lastNameController.text,
-                        '',
+                        firstNameController.text == null
+                            ? auth.user.firstName!
+                            : firstNameController.text,
+                        lastNameController.text == null
+                            ? auth.user.lastName!
+                            : lastNameController.text,
+                        auth.user.phoneNumber!,
                         AuthMixin.auth(context).image!,
                         true,
                         context);

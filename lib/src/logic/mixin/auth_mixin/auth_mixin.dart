@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:engagementwallet/src/logic/exceptions/api_failure_exception.dart';
 import 'package:engagementwallet/src/logic/helper/network_helper.dart';
 import 'package:engagementwallet/src/logic/models/app_model/app_model.dart';
+import 'package:engagementwallet/src/logic/models/user_model/user_model.dart';
 import 'package:engagementwallet/src/logic/repository/hive_repository.dart';
 import 'package:engagementwallet/src/ui/app_layout/app_layout.dart';
 import 'package:engagementwallet/src/ui/authentication/login/login.dart';
@@ -38,6 +40,7 @@ class AuthMixin extends ChangeNotifier {
   String _email = '';
   String? _otp;
   String _userId = '';
+  User _user = User();
   File? _image;
 
   //Getters
@@ -48,6 +51,7 @@ class AuthMixin extends ChangeNotifier {
   String? get otp => _otp;
   String get userId => _userId;
   File? get image => _image;
+  User get user => _user;
 
   //Setters
   setIsLoading(bool isLoading) => _isLoading = isLoading;
@@ -56,6 +60,7 @@ class AuthMixin extends ChangeNotifier {
   setEmail(String email) => _email = email;
   setOtp(String? otp) => _otp = otp;
   setUserId(String userId) => _userId = userId;
+  setUser(User user) => _user = user;
   setImage(File image) {
     _image = image;
     notifyListeners();
@@ -65,6 +70,26 @@ class AuthMixin extends ChangeNotifier {
   static AuthMixin auth(BuildContext context, {bool listen = false}) {
     _context = context;
     return Provider.of<AuthMixin>(context, listen: listen);
+  }
+
+  // Get Order History.
+  Future<User> getUsers(
+    BuildContext context,
+  ) async {
+    try {
+      var data = await _helper.getUser(AuthMixin.auth(context).token!);
+
+      print('messages: $data');
+      final result = User.fromJson(data['data']);
+      setUser(result);
+      notifyListeners();
+
+      //Return result
+      return result;
+    } catch (ex) {
+      ///7. Throw exceptions
+      throw ApiFailureException(ex);
+    }
   }
 
   ///1.Login
@@ -110,37 +135,6 @@ class AuthMixin extends ChangeNotifier {
 
   ///2. Forgot password
   Future<dynamic> forgotPassword(
-      String email, String type, BuildContext context) async {
-    try {
-      ///1. Set Loading state to true
-      setIsLoading(true);
-      notifyListeners();
-
-      print('type: $email');
-
-      // ///2.Call forget Password
-      await _helper.forgotPassword(email);
-
-      ///3.Set Loading state to false
-      setIsLoading(false);
-      notifyListeners();
-
-      setEmail(email);
-
-      openDialog(
-          context,
-          VerifyPin(
-            type: type,
-          ));
-    } catch (ex) {
-      ///5.Set Loading state to false
-      setIsLoading(false);
-      notifyListeners();
-    }
-  }
-
-  ///2. Forgot password
-  Future<dynamic> addAddress(
       String email, String type, BuildContext context) async {
     try {
       ///1. Set Loading state to true

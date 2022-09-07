@@ -6,9 +6,8 @@ import 'package:engagementwallet/src/logic/models/order_history_model/order_hist
 import 'package:engagementwallet/src/logic/models/payment_options/payment_options.dart';
 import 'package:engagementwallet/src/logic/models/product_model/product_model.dart';
 import 'package:engagementwallet/src/ui/app_layout/app_layout.dart';
-import 'package:engagementwallet/src/ui/app_layout/shop/order_history.dart';
-import 'package:engagementwallet/src/ui/app_layout/shop/pay_with_wallet.dart';
 import 'package:engagementwallet/src/ui/authentication/signup/account_created.dart';
+import 'package:engagementwallet/src/utils/functions.dart';
 import 'package:engagementwallet/src/utils/navigationWidget.dart';
 import 'package:engagementwallet/src/widgets/dialogs/dialogs.dart';
 import 'package:flutter/material.dart';
@@ -33,6 +32,7 @@ class CartMixin extends ChangeNotifier {
   List<Map<String, String>> _addressList = [];
   List<CartModel> _intitialList = [];
   List<OrderHistoryModel> _orderHistory = [];
+  List<dynamic> _addresses = [];
   List<ProductModel> _products = [];
   List<PaymentOptions> _paymentOptions = [];
 
@@ -47,6 +47,7 @@ class CartMixin extends ChangeNotifier {
   List<CartModel> get intitialList => _intitialList;
   List<Map<String, String>> get addressList => _addressList;
   List<OrderHistoryModel> get orderHistory => _orderHistory;
+  List<dynamic> get addresses => _addresses;
   List<ProductModel> get products => _products;
   List<PaymentOptions> get paymentOptions => _paymentOptions;
 
@@ -55,6 +56,7 @@ class CartMixin extends ChangeNotifier {
   setIsLoading(bool isLoading) => _isLoading = isLoading;
   setOrderHistory(List<OrderHistoryModel> orderHistory) =>
       _orderHistory = orderHistory;
+  setAddresses(List<dynamic> addresses) => _addresses = addresses;
   setProducts(List<ProductModel> products) => _products = products;
   setPaymentOptions(List<PaymentOptions> paymentOptions) =>
       _paymentOptions = paymentOptions;
@@ -71,7 +73,7 @@ class CartMixin extends ChangeNotifier {
   }
 
   reduceCartPrice(int objIndex) {
-    if(_cartList.isNotEmpty){
+    if (_cartList.isNotEmpty) {
       if (_cartList[objIndex]['quantity'] > 1) {
         _cartList[objIndex]['quantity'] -= 1;
         _cartList[objIndex]['amount'] -= _intitialList[objIndex].amount;
@@ -83,9 +85,7 @@ class CartMixin extends ChangeNotifier {
     } else {
       _calculatedAmount = 0;
       notifyListeners();
-
     }
-
   }
 
   addCartPrice(int objIndex) {
@@ -96,7 +96,7 @@ class CartMixin extends ChangeNotifier {
   }
 
   removeItemFromList(String id) {
-    if(_cartList.isNotEmpty){
+    if (_cartList.isNotEmpty) {
       _cartList.removeWhere((element) => element['id'] == id);
       calculateSumInCart();
     }
@@ -118,10 +118,8 @@ class CartMixin extends ChangeNotifier {
       debugPrint('already in list');
     } else {
       _cartList.add(cartItems);
-      _newCartList.add({
-        "quantity": cartItems["quantity"],
-        "productId": cartItems["id"]
-      });
+      _newCartList.add(
+          {"quantity": cartItems["quantity"], "productId": cartItems["id"]});
       print('cartlist:${_cartList}');
       print('newCartList:${_newCartList}');
       _intitialList.add(items);
@@ -133,6 +131,51 @@ class CartMixin extends ChangeNotifier {
     _addressList.add(addressItems);
     print('list: $addressList');
     notifyListeners();
+  }
+
+  // Get Order History.
+  Future<List<dynamic>> getAddress(
+    BuildContext context,
+  ) async {
+    try {
+      var data = await _helper.getAddress(AuthMixin.auth(context).token!);
+
+      print('messages: $data');
+      setAddresses(data['data']);
+      notifyListeners();
+
+      //Return result
+      return data['data'];
+    } catch (ex) {
+      ///7. Throw exceptions
+      throw ApiFailureException(ex);
+    }
+  }
+
+  ///2. Forgot password
+  Future<dynamic> addAddress(String address, BuildContext context) async {
+    try {
+      ///1. Set Loading state to true
+      setIsLoading(true);
+      notifyListeners();
+
+      // ///2.Call ADD ADDRESS
+      await _helper.addAddress(address, AuthMixin.auth(context).token!);
+
+      ///3.Set Loading state to false
+      setIsLoading(false);
+      notifyListeners();
+      showFlush(context, 'Successfully added address');
+      await getAddress(context);
+      popView(context);
+    } catch (ex) {
+      ///5.Set Loading state to false
+      setIsLoading(false);
+      notifyListeners();
+      showFlush(context, ex.toString());
+
+      print('ex: ${ex.toString()}');
+    }
   }
 
   //Set price
@@ -232,7 +275,7 @@ class CartMixin extends ChangeNotifier {
           await _helper.getPaymentOptions(AuthMixin.auth(context).token!);
       setIsLoading(false);
       notifyListeners();
-    final result =
+      final result =
           (data as List).map((e) => PaymentOptions.fromJson(e)).toList();
 
       setPaymentOptions(result);
@@ -245,7 +288,6 @@ class CartMixin extends ChangeNotifier {
     } catch (ex) {
       setIsLoading(false);
       notifyListeners();
-
 
       ///7. Throw exceptions
       throw ApiFailureException(ex);

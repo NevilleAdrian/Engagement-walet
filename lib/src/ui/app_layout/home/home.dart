@@ -1,8 +1,12 @@
+import 'package:engagementwallet/src/logic/future_helper/future_helper.dart';
+import 'package:engagementwallet/src/logic/mixin/auth_mixin/auth_mixin.dart';
+import 'package:engagementwallet/src/logic/models/user_model/user_model.dart';
 import 'package:engagementwallet/src/ui/app_layout/home/top_up/top_up.dart';
 import 'package:engagementwallet/src/ui/app_layout/home/transfer/make_transfer.dart';
 import 'package:engagementwallet/src/ui/app_layout/home/withdraw/withdraw_balance.dart';
 import 'package:engagementwallet/src/ui/app_layout/shop/shop.dart';
 import 'package:engagementwallet/src/utils/colors.dart';
+import 'package:engagementwallet/src/utils/functions.dart';
 import 'package:engagementwallet/src/utils/navigationWidget.dart';
 import 'package:engagementwallet/src/utils/sized_boxes.dart';
 import 'package:engagementwallet/src/widgets/circle_plus.dart';
@@ -23,9 +27,32 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  Future<User>? futureUser;
+
+  //2. Call Api here
+  Future<User>? futureTask() async {
+    //Initialize provider
+    AuthMixin cart = AuthMixin.auth(context);
+
+    final result = await cart.getUsers(context);
+
+    setState(() {});
+    //
+    //Return future value
+    return Future.value(result);
+  }
+
+  ///3. Set Future users to the task
+  @override
+  void initState() {
+    futureUser = futureTask();
+    super.initState();
+  }
+
   bool change = true;
   @override
   Widget build(BuildContext context) {
+    AuthMixin auth = AuthMixin.auth(context, listen: true);
     return Scaffold(
       appBar: const TopNavBar(),
       body: SingleChildScrollView(
@@ -35,20 +62,35 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: defaultVHPadding,
               child: Column(
                 children: [
-                  Row(
-                    children: [
-                      Image.asset(Assets.male),
-                      kVerySmallWidth,
-                      RichText(
-                        text: TextSpan(
-                            text: 'Welcome',
-                            style: textStyle400Small,
-                            children: [
-                              TextSpan(
-                                  text: ' Precious', style: textStyle600Small)
-                            ]),
-                      )
-                    ],
+                  FutureHelper(
+                    task: futureUser!,
+                    loader: Center(
+                      child: circularProgressIndicator(),
+                    ),
+                    noData: const Center(
+                      child: Text('No User Information'),
+                    ),
+                    builder: (context, _) => Row(
+                      children: [
+                        auth.user.profileImage != null
+                            ? CircleAvatar(
+                                child: Image.network(auth.user.profileImage!),
+                                backgroundColor: primaryColor,
+                              )
+                            : Image.asset(Assets.male),
+                        kVerySmallWidth,
+                        RichText(
+                          text: TextSpan(
+                              text: 'Welcome ',
+                              style: textStyle400Small,
+                              children: [
+                                TextSpan(
+                                    text: auth.user.firstName,
+                                    style: textStyle600Small)
+                              ]),
+                        )
+                      ],
+                    ),
                   ),
                   kSmallHeight,
                   TransferBox(
@@ -68,7 +110,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     onTopUp: () => openDialog(context, const TopUp()),
                   ),
                   const ShopScreen()
-
                 ],
               ),
             )
@@ -79,7 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class TopNavBar extends StatelessWidget implements PreferredSizeWidget{
+class TopNavBar extends StatelessWidget implements PreferredSizeWidget {
   const TopNavBar({
     Key? key,
   }) : super(key: key);
@@ -164,8 +205,7 @@ class TransferBox extends StatelessWidget {
                               Text(amount, style: textStyleBigWhite),
                               change
                                   ? InkWell(
-                                      onTap: onTopUp,
-                                      child: const CirclePlus())
+                                      onTap: onTopUp, child: const CirclePlus())
                                   : Container()
                             ],
                           ),

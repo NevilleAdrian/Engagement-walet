@@ -1,11 +1,6 @@
-import 'package:carousel_slider/carousel_slider.dart';
+import 'package:engagementwallet/src/logic/future_helper/future_helper.dart';
 import 'package:engagementwallet/src/logic/mixin/cart_mixin/cart_mixin.dart';
-import 'package:engagementwallet/src/ui/app_layout/app_layout.dart';
-import 'package:engagementwallet/src/ui/app_layout/home/bank_transfer/bank_transfer.dart';
 import 'package:engagementwallet/src/ui/app_layout/home/card_transfer/card_transfer.dart';
-import 'package:engagementwallet/src/ui/app_layout/home/top_up/top_up.dart';
-import 'package:engagementwallet/src/ui/app_layout/home/withdraw/withdraw_balance.dart';
-import 'package:engagementwallet/src/ui/app_layout/shop/add_to_cart.dart';
 import 'package:engagementwallet/src/ui/app_layout/shop/new_address.dart';
 import 'package:engagementwallet/src/ui/app_layout/shop/pay_with_wallet.dart';
 import 'package:engagementwallet/src/utils/colors.dart';
@@ -17,26 +12,20 @@ import 'package:engagementwallet/src/widgets/backgrounds/authentication_backgrou
 import 'package:engagementwallet/src/widgets/custom_button.dart';
 import 'package:engagementwallet/src/widgets/dialogs/dialogs.dart';
 import 'package:engagementwallet/src/widgets/dialogs/transaction_dialog.dart';
-import 'package:engagementwallet/src/widgets/sliders/vertical_sliders.dart';
 import 'package:engagementwallet/src/widgets/space_divider.dart';
-import 'package:engagementwallet/src/widgets/textforms/editText.dart';
 import 'package:engagementwallet/values/assets.dart';
 import 'package:engagementwallet/values/padding.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:qr_flutter/qr_flutter.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../values/text_styles.dart';
-import '../../authentication/signup/account_created.dart';
 
 class MakePurchase extends StatefulWidget {
-  const MakePurchase(
-      {Key? key,
-        })
-      : super(key: key);
-
-
+  const MakePurchase({
+    Key? key,
+  }) : super(key: key);
 
   @override
   State<MakePurchase> createState() => _MakePurchaseState();
@@ -45,36 +34,51 @@ class MakePurchase extends StatefulWidget {
 class _MakePurchaseState extends State<MakePurchase> {
   late List<String> imageList;
 
+  Future<List<dynamic>>? futureAddress;
+
+  //2. Call Api here
+  Future<List<dynamic>>? futureTask() async {
+    //Initialize provider
+    CartMixin cart = CartMixin.cartProvider(context);
+
+    final result = await cart.getAddress(context);
+
+    setState(() {});
+    //
+    //Return future value
+    return Future.value(result);
+  }
+
   @override
   void initState() {
+    futureAddress = futureTask();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    CartMixin cart = CartMixin.cartProvider(context);
+    CartMixin cart = CartMixin.cartProvider(context, listen: true);
     return AuthenticationBackGround(
         height: 1.7.h,
         padding: EdgeInsets.zero,
         childPadding: defaultVHPadding.copyWith(bottom: 40),
         child: SingleChildScrollView(
           child: Container(
-            color:  whiteColor,
+            color: whiteColor,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-
               children: [
                 Padding(
                   padding: defaultLeftPadding,
                   child: Row(
-                    mainAxisAlignment:MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             BackArrow(
-                              onTap: (){
+                              onTap: () {
                                 popView(context);
                               },
                             ),
@@ -82,7 +86,8 @@ class _MakePurchaseState extends State<MakePurchase> {
                             Text('Make Store Purchase',
                                 style: textStyleBig.copyWith(fontSize: 26)),
                             kSmallHeight,
-                            Text('Make Payments either via our payment provider or directly to the store ',
+                            Text(
+                                'Make Payments either via our payment provider or directly to the store ',
                                 style: textStyle400Small),
                             kNormalHeight,
                           ],
@@ -95,7 +100,6 @@ class _MakePurchaseState extends State<MakePurchase> {
                 kSmallHeight,
                 Padding(
                   padding: defaultHPadding,
-
                   child: Column(
                     children: [
                       Row(
@@ -111,58 +115,80 @@ class _MakePurchaseState extends State<MakePurchase> {
                               child: Text(
                                 '+ Add New Address',
                                 style:
-                                textStyleSecondary.copyWith(fontSize: 14),
+                                    textStyleSecondary.copyWith(fontSize: 14),
                               )),
                         ],
                       ),
                       kSmallHeight,
-                      Container(
-                        height: 160,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(width: 1, color: secondaryColor),
-                          color: otherColor,
+                      FutureHelper(
+                        task: futureAddress!,
+                        loader: Center(
+                          child: circularProgressIndicator(),
                         ),
-                        child: ListView.separated(
-                          itemCount: cart.addressList.length,
-                          separatorBuilder: (context, index) => const SpaceDivider(
-                            height: 20,
+                        noData: const Center(
+                          child: Text('No Address'),
+                        ),
+                        builder: (context, _) => Container(
+                          height: 160,
+                          padding: EdgeInsets.symmetric(vertical: 10),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(width: 1, color: secondaryColor),
+                            color: otherColor,
                           ),
-                          itemBuilder: (context, index) {
-                            String? address =
-                            cart.addressList[index]['address'];
-                            return Padding(
-                              padding: defaultHPadding.copyWith(top: 10),
-                              child: Row(
-                                mainAxisAlignment:
-                                MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          address ?? '',
-                                          style: textStyle14Small,
-                                        ),
-                                        InkWell(
-                                            onTap: () =>  cart.removeAddressFromList(cart.addressList[index]['address']),
-                                            child: Text('remove', style: textStyle14Small.copyWith(color: Colors.red),))
-                                      ],
+                          child: ListView.builder(
+                            itemCount: cart.addresses.length,
+                            // separatorBuilder: (context, index) =>
+                            //     const SpaceDivider(
+                            //   height: 20,
+                            // ),
+                            itemBuilder: (context, index) {
+                              String? address = toBeginningOfSentenceCase(
+                                  cart.addresses[index]);
+                              return Padding(
+                                padding: defaultHPadding.copyWith(top: 10),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            address ?? '',
+                                            style: textStyle14Small,
+                                          ),
+                                          // InkWell(
+                                          //     onTap: () =>
+                                          //         cart.removeAddressFromList(
+                                          //             cart.addressList[index]
+                                          //                 ['address']),
+                                          //     child: Text(
+                                          //       'remove',
+                                          //       style:
+                                          //           textStyle14Small.copyWith(
+                                          //               color: Colors.red),
+                                          //     ))
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                  Checkbox(
-                                    value: cart.checkedValue == index ? cart.isChecked : false,
-                                    onChanged: (bool? value){
-                                      cart.setChecked(value, index);
-                                    },
-                                    shape: const CircleBorder(),
-                                    activeColor: secondaryColor,
-                                  )
-                                ],
-                              ),
-                            );
-                          },
+                                    // Checkbox(
+                                    //   value: cart.checkedValue == index
+                                    //       ? cart.isChecked
+                                    //       : false,
+                                    //   onChanged: (bool? value) {
+                                    //     cart.setChecked(value, index);
+                                    //   },
+                                    //   shape: const CircleBorder(),
+                                    //   activeColor: secondaryColor,
+                                    // )
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       ),
                     ],
@@ -208,14 +234,11 @@ class _MakePurchaseState extends State<MakePurchase> {
                 //     ],
                 //   ),
                 // )
-
-
               ],
             ),
           ),
         ),
-        secondChild:
-        Column(
+        secondChild: Column(
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -224,27 +247,34 @@ class _MakePurchaseState extends State<MakePurchase> {
                 Text('₦ 500', style: textStyle400Small),
               ],
             ),
-            const SpaceDivider(height: 40,),
+            const SpaceDivider(
+              height: 40,
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('TOTAL: ', style: textStyle400Small),
-                Text('₦ ${addSeparator(toDecimalPlace(cart.calculatedAmount))}', style: textStyle600Small),
+                Text('₦ ${addSeparator(toDecimalPlace(cart.calculatedAmount))}',
+                    style: textStyle600Small),
               ],
             ),
             kSmallHeight,
             CustomButton(
               text: "MAKE PAYMENT ONLINE",
-              onPressed: () => openDialog(context, TransactionDialog(
-                mainText: 'Make Payment',
-                subText: 'Make payment with either Wallet or Card',
-                firstIcon: Assets.wallet,
-                firstItemText: 'Pay With Wallet',
-                secondIcon: Assets.card,
-                secondItemText: 'Card or Bank Accounts',
-                firstItemTap: () => navigate(context, const PayWithWallet()),
-                secondItemTap: () => navigate(context, const CardTransfer()),
-              )),
+              onPressed: () => openDialog(
+                  context,
+                  TransactionDialog(
+                    mainText: 'Make Payment',
+                    subText: 'Make payment with either Wallet or Card',
+                    firstIcon: Assets.wallet,
+                    firstItemText: 'Pay With Wallet',
+                    secondIcon: Assets.card,
+                    secondItemText: 'Card or Bank Accounts',
+                    firstItemTap: () =>
+                        navigate(context, const PayWithWallet()),
+                    secondItemTap: () =>
+                        navigate(context, const CardTransfer()),
+                  )),
             ),
             // kSmallHeight,
             // InkWell(
@@ -264,8 +294,7 @@ class _MakePurchaseState extends State<MakePurchase> {
             //   ),
             // )
           ],
-        )
-    );
+        ));
   }
 }
 
@@ -306,17 +335,20 @@ class _CartBoxState extends State<CartBox> {
             cart.increaseAmount(widget.amount);
           },
         ),
-
       ],
     );
-
   }
 }
 
-
 class CartButtons extends StatelessWidget {
   const CartButtons({
-    Key? key, this.color, this.item, this.fontWeight, this.fontSize, this.onTap, this.padding,
+    Key? key,
+    this.color,
+    this.item,
+    this.fontWeight,
+    this.fontSize,
+    this.onTap,
+    this.padding,
   }) : super(key: key);
 
   final Color? color;
@@ -326,18 +358,20 @@ class CartButtons extends StatelessWidget {
   final Function()? onTap;
   final EdgeInsets? padding;
 
-
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap ?? () => null,
       child: Container(
         padding: padding ?? defaultCartPadding,
-        decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(6)
+        decoration:
+            BoxDecoration(color: color, borderRadius: BorderRadius.circular(6)),
+        child: Text(
+          item!,
+          style: textStyle400Small.copyWith(
+              fontSize: fontSize ?? 20,
+              fontWeight: fontWeight ?? FontWeight.w400),
         ),
-        child:  Text(item!, style: textStyle400Small.copyWith(fontSize: fontSize ?? 20, fontWeight: fontWeight ?? FontWeight.w400 ),),
       ),
     );
   }

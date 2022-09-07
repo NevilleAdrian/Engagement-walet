@@ -1,23 +1,15 @@
-
 import 'package:engagementwallet/src/logic/bloc/auth_bloc/validation_bloc.dart';
+import 'package:engagementwallet/src/logic/future_helper/future_helper.dart';
 import 'package:engagementwallet/src/logic/mixin/cart_mixin/cart_mixin.dart';
-import 'package:engagementwallet/src/ui/app_layout/app_layout.dart';
-import 'package:engagementwallet/src/ui/app_layout/home/card_transfer/card_transfer.dart';
 import 'package:engagementwallet/src/ui/app_layout/shop/new_address.dart';
-import 'package:engagementwallet/src/ui/app_layout/shop/pay_with_wallet.dart';
-import 'package:engagementwallet/src/ui/app_layout/shop/store_pop_up.dart';
-import 'package:engagementwallet/src/ui/authentication/signup/account_created.dart';
 import 'package:engagementwallet/src/utils/colors.dart';
 import 'package:engagementwallet/src/utils/functions.dart';
-import 'package:engagementwallet/src/utils/navigationWidget.dart';
 import 'package:engagementwallet/src/utils/sized_boxes.dart';
 import 'package:engagementwallet/src/widgets/back_arrow.dart';
 import 'package:engagementwallet/src/widgets/backgrounds/authentication_backgrounds.dart';
 import 'package:engagementwallet/src/widgets/custom_button.dart';
 import 'package:engagementwallet/src/widgets/dialogs/dialogs.dart';
-import 'package:engagementwallet/src/widgets/dialogs/transaction_dialog.dart';
 import 'package:engagementwallet/src/widgets/space_divider.dart';
-import 'package:engagementwallet/values/assets.dart';
 import 'package:engagementwallet/values/padding.dart';
 import 'package:engagementwallet/values/text_styles.dart';
 import 'package:flutter/material.dart';
@@ -37,6 +29,28 @@ class _DeliveryPurchaseState extends State<DeliveryPurchase> {
   TextEditingController amountCC = TextEditingController();
 
   String bankCode = '';
+
+  Future<List<dynamic>>? futureAddress;
+
+  //2. Call Api here
+  Future<List<dynamic>>? futureTask() async {
+    //Initialize provider
+    CartMixin cart = CartMixin.cartProvider(context);
+
+    final result = await cart.getAddress(context);
+
+    setState(() {});
+    //
+    //Return future value
+    return Future.value(result);
+  }
+
+  ///3. Set Future users to the task
+  @override
+  void initState() {
+    futureAddress = futureTask();
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -93,53 +107,74 @@ class _DeliveryPurchaseState extends State<DeliveryPurchase> {
                         ],
                       ),
                       kSmallHeight,
-                      Container(
-                        height: 160,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(width: 1, color: secondaryColor),
-                          color: otherColor,
+                      FutureHelper(
+                        task: futureAddress!,
+                        loader: Center(
+                          child: circularProgressIndicator(),
                         ),
-                        child: ListView.separated(
-                          itemCount: cart.addressList.length,
-                          separatorBuilder: (context, index) => const SpaceDivider(
-                            height: 20,
+                        noData: const Center(
+                          child: Text('No Friend Request'),
+                        ),
+                        builder: (context, _) => Container(
+                          height: 160,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(width: 1, color: secondaryColor),
+                            color: otherColor,
                           ),
-                          itemBuilder: (context, index) {
-                            String? address =
-                                cart.addressList[index]['address'];
-                            return Padding(
-                              padding: defaultHPadding.copyWith(top: 10),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          address ?? '',
-                                          style: textStyle14Small,
-                                        ),
-                                        InkWell(
-                                          onTap: () =>  cart.removeAddressFromList(cart.addressList[index]['address']),
-                                            child: Text('remove', style: textStyle14Small.copyWith(color: Colors.red),))
-                                      ],
+                          child: ListView.separated(
+                            itemCount: cart.addressList.length,
+                            separatorBuilder: (context, index) =>
+                                const SpaceDivider(
+                              height: 20,
+                            ),
+                            itemBuilder: (context, index) {
+                              String? address =
+                                  cart.addressList[index]['address'];
+                              return Padding(
+                                padding: defaultHPadding.copyWith(top: 10),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            address ?? '',
+                                            style: textStyle14Small,
+                                          ),
+                                          InkWell(
+                                              onTap: () =>
+                                                  cart.removeAddressFromList(
+                                                      cart.addressList[index]
+                                                          ['address']),
+                                              child: Text(
+                                                'remove',
+                                                style:
+                                                    textStyle14Small.copyWith(
+                                                        color: Colors.red),
+                                              ))
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                  Checkbox(
-                                      value: cart.checkedValue == index ? cart.isChecked : false,
-                                      onChanged: (bool? value){
+                                    Checkbox(
+                                      value: cart.checkedValue == index
+                                          ? cart.isChecked
+                                          : false,
+                                      onChanged: (bool? value) {
                                         cart.setChecked(value, index);
                                       },
-                                    shape: const CircleBorder(),
-                                    activeColor: secondaryColor,
-                                  )
-                                ],
-                              ),
-                            );
-                          },
+                                      shape: const CircleBorder(),
+                                      activeColor: secondaryColor,
+                                    )
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       ),
                     ],
@@ -158,12 +193,15 @@ class _DeliveryPurchaseState extends State<DeliveryPurchase> {
                 Text('₦ 500', style: textStyle400Small),
               ],
             ),
-            const SpaceDivider(height: 40,),
+            const SpaceDivider(
+              height: 40,
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('TOTAL: ', style: textStyle400Small),
-                Text('₦ ${addSeparator(toDecimalPlace(cart.calculatedAmount))}', style: textStyle600Small),
+                Text('₦ ${addSeparator(toDecimalPlace(cart.calculatedAmount))}',
+                    style: textStyle600Small),
               ],
             ),
             kNormalHeight,
@@ -182,10 +220,10 @@ class _DeliveryPurchaseState extends State<DeliveryPurchase> {
             // kSmallHeight,
 
             CustomButton(
-              text: "Pay With Cash",
-              loader: CartMixin.cartProvider(context, listen: true).isLoading,
-              onPressed: () => CartMixin.cartProvider(context).checkOut(context, 0)
-            ),
+                text: "Pay With Cash",
+                loader: CartMixin.cartProvider(context, listen: true).isLoading,
+                onPressed: () =>
+                    CartMixin.cartProvider(context).checkOut(context, 0)),
 
             // InkWell(
             //   onTap: () => navigate(
@@ -204,7 +242,6 @@ class _DeliveryPurchaseState extends State<DeliveryPurchase> {
             //   ),
             // )
           ],
-        )
-    );
+        ));
   }
 }
