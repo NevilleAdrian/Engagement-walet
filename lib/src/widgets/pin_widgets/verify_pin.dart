@@ -1,12 +1,8 @@
 import 'package:engagementwallet/src/logic/mixin/auth_mixin/auth_mixin.dart';
-import 'package:engagementwallet/src/ui/authentication/forgot_password/change_password.dart';
-import 'package:engagementwallet/src/ui/authentication/signup/account_created.dart';
-import 'package:engagementwallet/src/ui/authentication/signup/complete_profile.dart';
 import 'package:engagementwallet/src/utils/colors.dart';
 import 'package:engagementwallet/src/utils/navigationWidget.dart';
 import 'package:engagementwallet/src/utils/sized_boxes.dart';
 import 'package:engagementwallet/src/widgets/custom_button.dart';
-import 'package:engagementwallet/src/widgets/dialogs/dialogs.dart';
 import 'package:engagementwallet/src/widgets/pin_widgets/pin_validation.dart';
 import 'package:engagementwallet/values/padding.dart';
 import 'package:engagementwallet/values/text_styles.dart';
@@ -75,7 +71,7 @@ class _VerifyPinState extends State<VerifyPin> {
               ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 260),
                 child: const Text(
-                  'Enter the 6-digit PIN sent to your number +234 906 1234 567.',
+                  'Enter the 6-digit PIN sent to your email',
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -100,14 +96,18 @@ class _VerifyPinState extends State<VerifyPin> {
                   text: "PROCEED",
                   loader: AuthMixin.auth(context, listen: true).isLoading,
                   onPressed: () async {
-                    if( widget.type != 'forgot'){
+                    if (widget.type != 'forgot') {
                       await AuthMixin.auth(context).verifyCustomerOtp(
                           otp: _pinController.text,
                           context: context,
-                          verificationPurpose: 'Registration'
-                      );
+                          type: widget.type,
+                          verificationPurpose: 'Registration');
                     } else {
-                      openDialog(context, ChangePassword());
+                      await AuthMixin.auth(context).verifyCustomerOtp(
+                          otp: _pinController.text,
+                          context: context,
+                          type: widget.type,
+                          verificationPurpose: 'PasswordReset');
                     }
                   }),
               kNormalHeight,

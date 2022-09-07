@@ -1,17 +1,10 @@
-
 import 'package:engagementwallet/src/logic/bloc/auth_bloc/form_validator_bloc/form_validator_bloc.dart';
 import 'package:engagementwallet/src/logic/bloc/auth_bloc/validation_bloc.dart';
-import 'package:engagementwallet/src/ui/app_layout/app_layout.dart';
-import 'package:engagementwallet/src/ui/authentication/login/login.dart';
-import 'package:engagementwallet/src/ui/authentication/signup/account_created.dart';
+import 'package:engagementwallet/src/logic/mixin/auth_mixin/auth_mixin.dart';
 import 'package:engagementwallet/src/utils/colors.dart';
 import 'package:engagementwallet/src/utils/navigationWidget.dart';
 import 'package:engagementwallet/src/utils/sized_boxes.dart';
-import 'package:engagementwallet/src/widgets/backgrounds/onboarding_background.dart';
 import 'package:engagementwallet/src/widgets/custom_button.dart';
-import 'package:engagementwallet/src/widgets/dialogs/dialogs.dart';
-import 'package:engagementwallet/src/widgets/pin_widgets/verify_pin.dart';
-import 'package:engagementwallet/src/widgets/textforms/editText.dart';
 import 'package:engagementwallet/src/widgets/textforms/passwordTextform.dart';
 import 'package:engagementwallet/values/padding.dart';
 import 'package:engagementwallet/values/text_styles.dart';
@@ -25,17 +18,19 @@ class ChangePassword extends StatefulWidget {
 }
 
 class _ForgotState extends State<ChangePassword> {
-
   final validator = ValidationBloc();
 
   TextEditingController passwordController = TextEditingController();
+  TextEditingController confirmController = TextEditingController();
 
   @override
   void dispose() {
     validator.dispose();
     passwordController.dispose();
+    confirmController.dispose();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -88,17 +83,19 @@ class _ForgotState extends State<ChangePassword> {
                 labelText: 'Password',
               ),
               kVeryLargeHeight,
-
+              PasswordSignUp(
+                text: 'Confirm New Password',
+                validatorCallback: formValidatorBloc.passwordValidator,
+                onChangedCallback: validator.changePassword,
+                controller: confirmController,
+                textInputType: TextInputType.visiblePassword,
+                labelText: 'Confirm Password',
+              ),
               CustomButton(
                 text: "CHANGE PASSWORD",
-                onPressed: () => navigate(
-                  context,
-                   AccountCreated(
-                    mainText: 'Setup Complete!',
-                    buttonText: 'GO HOME',
-                    onPressed: () => navigate(context, const AppLayout()),
-                  ),
-                ),
+                onPressed: () async => await AuthMixin.auth(context)
+                    .resetPassword(passwordController.text,
+                        confirmController.text, context),
               ),
             ],
           ),

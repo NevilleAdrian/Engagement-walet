@@ -1,5 +1,5 @@
 import 'dart:convert';
-
+import 'dart:io';
 
 import 'package:engagementwallet/src/logic/helper/network_helper.dart';
 import 'package:engagementwallet/src/logic/models/app_model/app_model.dart';
@@ -18,7 +18,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-
+import '../../../ui/authentication/forgot_password/change_password.dart';
+import '../../../widgets/pin_widgets/verify_pin.dart';
 
 class AuthMixin extends ChangeNotifier {
   //Build Context
@@ -27,41 +28,38 @@ class AuthMixin extends ChangeNotifier {
   //Constructor
   AuthMixin(this._helper, this._hiveRepository);
 
-
   final NetworkHelper _helper;
   final HiveRepository _hiveRepository;
-
 
   //Initializers
   bool _isLoading = false;
   String? _token;
-  String? _phone;
+  String _phone = '';
+  String _email = '';
   String? _otp;
-  String? _userId;
-  String? _image;
-
+  String _userId = '';
+  File? _image;
 
   //Getters
   bool get isLoading => _isLoading;
   String? get token => _token;
-  String? get phone => _phone;
+  String get phone => _phone;
+  String get email => _email;
   String? get otp => _otp;
-  String? get userId => _userId;
-  String? get image => _image;
-
+  String get userId => _userId;
+  File? get image => _image;
 
   //Setters
   setIsLoading(bool isLoading) => _isLoading = isLoading;
   setToken(String? token) => _token = token;
-  setPhone(String? phone) => _phone = phone;
+  setPhone(String phone) => _phone = phone;
+  setEmail(String email) => _email = email;
   setOtp(String? otp) => _otp = otp;
-  setUserId(String? userId) => _userId = userId;
-  setImage(String? image) {
+  setUserId(String userId) => _userId = userId;
+  setImage(File image) {
     _image = image;
     notifyListeners();
   }
-
-
 
   //AuthProvider abstraction
   static AuthMixin auth(BuildContext context, {bool listen = false}) {
@@ -69,9 +67,9 @@ class AuthMixin extends ChangeNotifier {
     return Provider.of<AuthMixin>(context, listen: listen);
   }
 
-
   ///1.Login
-  Future<dynamic> loginUser(String emailAddress, String password, BuildContext context) async {
+  Future<dynamic> loginUser(
+      String emailAddress, String password, BuildContext context) async {
     try {
       ///1. Set Loading state to true
       setIsLoading(true);
@@ -87,12 +85,12 @@ class AuthMixin extends ChangeNotifier {
 
       // setDecoded(DecodedToken.fromJson(parseJwtPayLoad(data['data']['accessToken'])));
 
-
       ///4a. Print token
       print('token:$token');
 
       ///4b. Save Token in hive
-      _hiveRepository.add<AppModel>(name: kTokenName, key: 'token', item: AppModel(token: token));
+      _hiveRepository.add<AppModel>(
+          name: kTokenName, key: 'token', item: AppModel(token: token));
 
       navigate(
         context,
@@ -102,26 +100,91 @@ class AuthMixin extends ChangeNotifier {
       ///3.Set Loading state to false
       setIsLoading(false);
       notifyListeners();
-
-
     } catch (ex) {
       ///7.Set Loading state to false
       setIsLoading(false);
       notifyListeners();
       showFlush(context, ex.toString());
-
-
     }
   }
 
-  ///2.Sign up
+  ///2. Forgot password
+  Future<dynamic> forgotPassword(
+      String email, String type, BuildContext context) async {
+    try {
+      ///1. Set Loading state to true
+      setIsLoading(true);
+      notifyListeners();
+
+      print('type: $email');
+
+      // ///2.Call forget Password
+      await _helper.forgotPassword(email);
+
+      ///3.Set Loading state to false
+      setIsLoading(false);
+      notifyListeners();
+
+      setEmail(email);
+
+      openDialog(
+          context,
+          VerifyPin(
+            type: type,
+          ));
+    } catch (ex) {
+      ///5.Set Loading state to false
+      setIsLoading(false);
+      notifyListeners();
+    }
+  }
+
+  ///2. Forgot password
+  Future<dynamic> addAddress(
+      String email, String type, BuildContext context) async {
+    try {
+      ///1. Set Loading state to true
+      setIsLoading(true);
+      notifyListeners();
+
+      print('type: $email');
+
+      // ///2.Call forget Password
+      await _helper.forgotPassword(email);
+
+      ///3.Set Loading state to false
+      setIsLoading(false);
+      notifyListeners();
+
+      setEmail(email);
+
+      openDialog(
+          context,
+          VerifyPin(
+            type: type,
+          ));
+    } catch (ex) {
+      ///5.Set Loading state to false
+      setIsLoading(false);
+      notifyListeners();
+    }
+  }
+
+  ///3.Sign up
   Future<dynamic> updateCustomerProfile(
-      {String? email,
-        String? password,
-        String? firstName,
-        String? lastName,
-        String? image,
-        BuildContext? context}) async {
+      @required String email,
+      @required String password,
+      @required String firstName,
+      @required String lastName,
+      @required String phoneNumber,
+      @required File image,
+      @required bool isProfile,
+      @required BuildContext context) async {
+    print(email);
+    print(password);
+    print(firstName);
+    print(lastName);
+    print(image);
     try {
       ///1. Set Loading state to true
       setIsLoading(true);
@@ -129,25 +192,25 @@ class AuthMixin extends ChangeNotifier {
 
       ///2. Sign up user
       var data = await _helper.updateCustomerProfile(
-        email!,
-        firstName!,
-        lastName!,
-        _phone!,
-        password!,
-        userId!,
-        image!,
-        context!
-      );
-      
+          image,
+          email,
+          firstName,
+          lastName,
+          _phone == null ? phoneNumber : phone,
+          password,
+          userId,
+          token);
+
       print('data: $data');
 
       ///3.Set Loading state to false
       setIsLoading(false);
       notifyListeners();
-
-      await openDialog(context, const CreatePin());
-
-
+      if (!isProfile) {
+        await openDialog(context, const CreatePin());
+      } else {
+        showFlush(context, 'Successfully updated Profile');
+      }
     } catch (ex) {
       ///4.Set Loading state to false
       print('ex: ${ex.toString()}');
@@ -156,11 +219,13 @@ class AuthMixin extends ChangeNotifier {
     }
   }
 
-
   ///3.Start Verification
-  Future<dynamic> startCustomerVerification({String? phoneNumber, String? verificationPurpose, BuildContext? context}) async {
+  Future<dynamic> startCustomerVerification(
+      {String? phoneNumber,
+      String? verificationPurpose,
+      BuildContext? context}) async {
     print('phone: ${phoneNumber}');
-    if( phoneNumber == null){
+    if (phoneNumber == null) {
       showFlush(context!, 'Please input a valid phone number');
     } else {
       try {
@@ -169,7 +234,8 @@ class AuthMixin extends ChangeNotifier {
         notifyListeners();
 
         ///2. Sign up user
-        await _helper.startCustomerVerification(phoneNumber, verificationPurpose!);
+        await _helper.startCustomerVerification(
+            phoneNumber, verificationPurpose!);
 
         ///3.Set Loading state to false
         setIsLoading(false);
@@ -180,8 +246,6 @@ class AuthMixin extends ChangeNotifier {
 
         /// 5. await dialog
         await openDialog(context!);
-
-
       } catch (ex) {
         ///5.Set Loading state to false
         setIsLoading(false);
@@ -193,52 +257,58 @@ class AuthMixin extends ChangeNotifier {
         showFlush(context!, ex.toString());
       }
     }
-
   }
 
   ///3.Start Verification
-  Future<dynamic> verifyCustomerOtp({ String? otp, String? verificationPurpose, BuildContext? context}) async {
+  Future<dynamic> verifyCustomerOtp(
+      {String? otp,
+      String? verificationPurpose,
+      String? type,
+      BuildContext? context}) async {
     print('phone: ${_phone}');
 
-      try {
-        ///1. Set Loading state to true
-        setIsLoading(true);
-        notifyListeners();
+    try {
+      ///1. Set Loading state to true
+      setIsLoading(true);
+      notifyListeners();
 
-        ///2. Sign up user
-        var data = await _helper.verifyCustomerOtp(_phone!, otp!, verificationPurpose!);
+      ///2. Sign up user
+      var data =
+          await _helper.verifyCustomerOtp(_phone, otp!, verificationPurpose!);
 
-        print('data: $data');
+      print('data: $data');
 
+      ///3. SetUserId
+      setUserId(data['data']['userId']);
 
-        ///3. SetUserId
-        setUserId(data['data']['userId']);
+      ///4.Set Loading state to false
+      setIsLoading(false);
+      notifyListeners();
 
-        ///4.Set Loading state to false
-        setIsLoading(false);
-        notifyListeners();
-
+      if (type == 'forgot') {
+        openDialog(context!, ChangePassword());
+        setOtp(otp);
+      } else {
         /// 5. await dialog
-        navigate(context!,  AccountCreated(
-          onPressed: () => navigate(
-            context,
-            const CompleteProfile(),
-          ) ,
-        ));
-
-
-      } catch (ex) {
-        ///5.Set Loading state to false
-        setIsLoading(false);
-        notifyListeners();
-
-        print(ex.toString());
-
-        ///6. Show flushbar
-        showFlush(context!, ex.toString());
+        navigate(
+            context!,
+            AccountCreated(
+              onPressed: () => navigate(
+                context,
+                const CompleteProfile(),
+              ),
+            ));
       }
+    } catch (ex) {
+      ///5.Set Loading state to false
+      setIsLoading(false);
+      notifyListeners();
 
+      print(ex.toString());
 
+      ///6. Show flushbar
+      showFlush(context!, ex.toString());
+    }
   }
 
   ///4.resend Otp
@@ -257,17 +327,15 @@ class AuthMixin extends ChangeNotifier {
 
       ///6. Show message
       showFlush(context, "An otp has been sent to your email");
-
     } catch (ex) {
       ///7.Set Loading state to false
       setIsLoading(false);
       notifyListeners();
-
     }
   }
 
   ///3.resend Otp
-  Future<dynamic> resendOtpAnon(BuildContext context,String email) async {
+  Future<dynamic> resendOtpAnon(BuildContext context, String email) async {
     try {
       ///1. Set Loading state to true
       setIsLoading(true);
@@ -286,42 +354,22 @@ class AuthMixin extends ChangeNotifier {
       ///7.Set Loading state to false
       setIsLoading(false);
       notifyListeners();
-
     }
   }
 
-  ///3. Forgot password
-  Future<dynamic> forgotPassword(String email, BuildContext context) async {
-    try {
-      ///1. Set Loading state to true
-      setIsLoading(true);
-      notifyListeners();
-
-      ///2.Call forget Password
-      await _helper.forgotPassword(email);
-
-      ///3.Set Loading state to false
-      setIsLoading(false);
-      notifyListeners();
-
-    } catch (ex) {
-      ///5.Set Loading state to false
-      setIsLoading(false);
-      notifyListeners();
-
-    }
-  }
-
-  ///4. Change password
-  Future<dynamic> changePassword(String confirmPassword, String newPassword, String currentPassword, BuildContext context) async {
+  ///4. Reset password
+  Future<dynamic> changePassword(String confirmPassword, String newPassword,
+      String currentPassword, BuildContext context) async {
     try {
       ///1. Set Loading state to true
       setIsLoading(true);
       notifyListeners();
 
       print('loading: $isLoading');
+
       ///2.Call forget Password
-      await _helper.changePassword(confirmPassword, newPassword, currentPassword, token!);
+      await _helper.changePassword(
+          confirmPassword, newPassword, currentPassword, token!);
 
       ///3.Set Loading state to false
       setIsLoading(false);
@@ -330,11 +378,6 @@ class AuthMixin extends ChangeNotifier {
       ///4. SHow flushbar
       showFlush(context, 'Password Successfully Created');
       popView(context);
-
-
-
-
-
     } catch (ex) {
       ///5.Set Loading state to false
       setIsLoading(false);
@@ -343,8 +386,37 @@ class AuthMixin extends ChangeNotifier {
       print('ex: ${ex.toString()}');
 
       showFlush(context, ex.toString());
+    }
+  }
 
+  ///4. Change password
+  Future<dynamic> resetPassword(
+      String password, String newPassword, BuildContext context) async {
+    try {
+      ///1. Set Loading state to true
+      setIsLoading(true);
+      notifyListeners();
 
+      print('loading: $isLoading');
+
+      ///2.Call forget Password
+      await _helper.resetPassword(email, otp!, password, newPassword);
+
+      ///3.Set Loading state to false
+      setIsLoading(false);
+      notifyListeners();
+
+      ///4. SHow flushbar
+      showFlush(context, 'Password Successfully Created');
+      pushAndRemoveUntil(context, const LoginScreen());
+    } catch (ex) {
+      ///5.Set Loading state to false
+      setIsLoading(false);
+      notifyListeners();
+
+      print('ex: ${ex.toString()}');
+
+      showFlush(context, ex.toString());
     }
   }
 
@@ -363,19 +435,17 @@ class AuthMixin extends ChangeNotifier {
       notifyListeners();
 
       navigate(context!, const SetupComplete());
-
-
     } catch (ex) {
       ///5.Set Loading state to false
       setIsLoading(false);
       notifyListeners();
       showFlush(context!, ex.toString());
-
     }
   }
 
   ///6. Verify Otp
-  Future<dynamic> verifyOtp(String otp, BuildContext context,String email) async {
+  Future<dynamic> verifyOtp(
+      String otp, BuildContext context, String email) async {
     try {
       ///1. Set Loading state to true
       setIsLoading(true);
@@ -387,22 +457,15 @@ class AuthMixin extends ChangeNotifier {
       ///3.Set Loading state to false
       setIsLoading(false);
       notifyListeners();
-
-
     } catch (ex) {
       ///5.Set Loading state to false
       setIsLoading(false);
       notifyListeners();
-
     }
   }
 
-
-
-
   ///6. Logout
   logout(BuildContext context, [String? route]) {
-
     ///1.Call logout api
     // await _helper.logout( token!);
 
@@ -412,14 +475,12 @@ class AuthMixin extends ChangeNotifier {
     ///3.Clear token hive
     _hiveRepository.clear<AppModel>(name: kTokenName);
 
-
     ///4. push to login
     navigate(context, const LoginScreen());
   }
 
   ///7. Decode token
   Map<String, dynamic> parseJwtPayLoad(String token) {
-
     final parts = token.split('.');
     if (parts.length != 3) {
       throw Exception('invalid token');
@@ -452,6 +513,4 @@ class AuthMixin extends ChangeNotifier {
 
     return utf8.decode(base64Url.decode(output));
   }
-
-
 }

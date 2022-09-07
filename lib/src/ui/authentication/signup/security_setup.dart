@@ -4,8 +4,6 @@ import 'package:engagementwallet/src/logic/mixin/auth_mixin/auth_mixin.dart';
 import 'package:engagementwallet/src/utils/sized_boxes.dart';
 import 'package:engagementwallet/src/widgets/backgrounds/authentication_backgrounds.dart';
 import 'package:engagementwallet/src/widgets/custom_button.dart';
-import 'package:engagementwallet/src/widgets/dialogs/dialogs.dart';
-import 'package:engagementwallet/src/widgets/pin_widgets/create_pin.dart';
 import 'package:engagementwallet/src/widgets/textforms/passwordTextform.dart';
 import 'package:engagementwallet/values/assets.dart';
 import 'package:engagementwallet/values/padding.dart';
@@ -18,7 +16,8 @@ class SecuritySetup extends StatefulWidget {
       {Key? key,
       required this.firstName,
       required this.lastName,
-      required this.emailAddress, this.image})
+      required this.emailAddress,
+      this.image})
       : super(key: key);
 
   final String firstName;
@@ -121,15 +120,16 @@ class _SecuritySetupState extends State<SecuritySetup> {
                   } else {
                     print('hi');
                     await AuthMixin.auth(context).updateCustomerProfile(
-                        email: widget.emailAddress,
-                        password: passwordController.text,
-                        firstName: widget.firstName,
-                        lastName: widget.lastName,
-                        image: AuthMixin.auth(context).image ?? '',
-                        context: context);
+                        widget.emailAddress,
+                        passwordController.text,
+                        widget.firstName,
+                        widget.lastName,
+                        '',
+                        AuthMixin.auth(context).image!,
+                        false,
+                        context);
                   }
                 }),
-
           ],
         ),
       ),

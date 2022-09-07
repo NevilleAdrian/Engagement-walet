@@ -1,3 +1,4 @@
+import 'package:engagementwallet/src/logic/mixin/auth_mixin/auth_mixin.dart';
 import 'package:engagementwallet/src/utils/colors.dart';
 import 'package:engagementwallet/src/utils/navigationWidget.dart';
 import 'package:engagementwallet/src/widgets/custom_button.dart';
@@ -19,8 +20,6 @@ class _ProfileSettingsState extends State<ProfileSettings> {
   TextEditingController userNameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -57,22 +56,32 @@ class _ProfileSettingsState extends State<ProfileSettings> {
           child: Column(
             children: [
               RegistrationForm(
-                  firstNameController: firstNameController,
-                  lastNameController: lastNameController,
-                  // userNameController: userNameController,
-                  emailController: emailController,
+                firstNameController: firstNameController,
+                lastNameController: lastNameController,
+                // userNameController: userNameController,
+                emailController: emailController,
                 phoneController: phoneController,
-
               ),
               CustomButton(
                   text: "SAVE CHANGES",
-                  onPressed: () => popView(context)
-              ),
+                  loader: AuthMixin.auth(context, listen: true).isLoading,
+                  onPressed: () async {
+                    print('hi');
+                    await AuthMixin.auth(context).updateCustomerProfile(
+                        emailController.text,
+                        '',
+                        firstNameController.text,
+                        lastNameController.text,
+                        '',
+                        AuthMixin.auth(context).image!,
+                        true,
+                        context);
+                  }),
+              // CustomButton(
+              //     text: "SAVE CHANGES", onPressed: () => popView(context)),
             ],
           ),
         )
-
-
       ],
     );
   }

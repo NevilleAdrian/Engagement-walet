@@ -1,12 +1,10 @@
-
 import 'package:engagementwallet/src/logic/bloc/auth_bloc/form_validator_bloc/form_validator_bloc.dart';
 import 'package:engagementwallet/src/logic/bloc/auth_bloc/validation_bloc.dart';
+import 'package:engagementwallet/src/logic/mixin/auth_mixin/auth_mixin.dart';
 import 'package:engagementwallet/src/utils/colors.dart';
 import 'package:engagementwallet/src/utils/navigationWidget.dart';
 import 'package:engagementwallet/src/utils/sized_boxes.dart';
 import 'package:engagementwallet/src/widgets/custom_button.dart';
-import 'package:engagementwallet/src/widgets/dialogs/dialogs.dart';
-import 'package:engagementwallet/src/widgets/pin_widgets/verify_pin.dart';
 import 'package:engagementwallet/src/widgets/textforms/editText.dart';
 import 'package:engagementwallet/values/padding.dart';
 import 'package:engagementwallet/values/text_styles.dart';
@@ -22,7 +20,6 @@ class ForgotPassword extends StatefulWidget {
 }
 
 class _ForgotState extends State<ForgotPassword> {
-
   final validator = ValidationBloc();
 
   TextEditingController emailController = TextEditingController();
@@ -33,6 +30,7 @@ class _ForgotState extends State<ForgotPassword> {
     emailController.dispose();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -88,7 +86,7 @@ class _ForgotState extends State<ForgotPassword> {
                       textInputType: TextInputType.emailAddress,
                       labelText: "Email",
                       useDefaultSuffix: (emailController.text.isNotEmpty &&
-                          snapshot.error == null)
+                              snapshot.error == null)
                           ? true
                           : false,
                     );
@@ -97,7 +95,10 @@ class _ForgotState extends State<ForgotPassword> {
 
               CustomButton(
                 text: "PROCEED",
-                onPressed: () => openDialog(context,  VerifyPin(type: widget.type,),),
+                loader: AuthMixin.auth(context, listen: true).isLoading,
+                onPressed: () async => await AuthMixin.auth(context)
+                    .forgotPassword(
+                        emailController.text, widget.type!, context),
               ),
             ],
           ),

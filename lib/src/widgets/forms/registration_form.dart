@@ -1,7 +1,4 @@
-import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
-
 
 import 'package:engagementwallet/src/logic/bloc/auth_bloc/form_validator_bloc/form_validator_bloc.dart';
 import 'package:engagementwallet/src/logic/bloc/auth_bloc/validation_bloc.dart';
@@ -18,7 +15,13 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 
 class RegistrationForm extends StatefulWidget {
-  const RegistrationForm({Key? key, required this.firstNameController, required this.lastNameController, required this.emailController, this.phoneController}) : super(key: key);
+  const RegistrationForm(
+      {Key? key,
+      required this.firstNameController,
+      required this.lastNameController,
+      required this.emailController,
+      this.phoneController})
+      : super(key: key);
 
   final TextEditingController firstNameController;
   final TextEditingController lastNameController;
@@ -35,7 +38,6 @@ class _RegistrationFormState extends State<RegistrationForm> {
   String imageBytes = '';
   File? _imageFile;
 
-
   @override
   void dispose() {
     validator.dispose();
@@ -46,21 +48,23 @@ class _RegistrationFormState extends State<RegistrationForm> {
     widget.phoneController?.dispose();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         InkWell(
           onTap: () async {
-            File image = await picker.onImagePickerPressed(ImageSource.gallery, context);
+            File image =
+                await picker.onImagePickerPressed(ImageSource.gallery, context);
             setState(() {
               _imageFile = image;
               picker.setCroppedImage(image);
             });
-            Uint8List imagebytes = await _imageFile!.readAsBytes(); //convert to bytes
-            String base64string = base64Encode(imagebytes);
-            imageBytes = base64string;
-            AuthMixin.auth(context).setImage(imageBytes);
+            // Uint8List imagebytes = await _imageFile!.readAsBytes(); //convert to bytes
+            // String base64string = base64Encode(imagebytes);
+            // imageBytes = base64string;
+            AuthMixin.auth(context).setImage(image);
           },
           child: Row(
             children: [
@@ -117,45 +121,49 @@ class _RegistrationFormState extends State<RegistrationForm> {
                 textInputType: TextInputType.emailAddress,
                 labelText: "Email",
                 useDefaultSuffix: (widget.emailController.text.isNotEmpty &&
-                    snapshot.error == null)
+                        snapshot.error == null)
                     ? true
                     : false,
               );
             }),
         kNormalHeight,
-        if(widget.phoneController != null)
-        Column(
-          children: [
-            StreamBuilder<String>(
-              stream: validator.phone,
-              builder: (context, snapshot) {
-                return PhoneTextForm(
-                  validatorCallback: formValidatorBloc.phoneValidator,
-                  onChangedCallback: validator.changePhone,
-                  controller: widget.phoneController,
-                  textInputType: TextInputType.phone,
-                  inputFormatter: [FilteringTextInputFormatter.digitsOnly],
-                  labelText: 'Phone Number',
-                  useDefaultSuffix:
-                  (widget.phoneController!.text.isNotEmpty && snapshot.error == null)
-                      ? true
-                      : false,
-                  text: 'Phone Number',
-                );
-              },
-            ),
-            kNormalHeight,
-
-          ],
-        )
-
+        if (widget.phoneController != null)
+          Column(
+            children: [
+              StreamBuilder<String>(
+                stream: validator.phone,
+                builder: (context, snapshot) {
+                  return PhoneTextForm(
+                    validatorCallback: formValidatorBloc.phoneValidator,
+                    onChangedCallback: validator.changePhone,
+                    controller: widget.phoneController,
+                    textInputType: TextInputType.phone,
+                    inputFormatter: [FilteringTextInputFormatter.digitsOnly],
+                    labelText: 'Phone Number',
+                    useDefaultSuffix:
+                        (widget.phoneController!.text.isNotEmpty &&
+                                snapshot.error == null)
+                            ? true
+                            : false,
+                    text: 'Phone Number',
+                  );
+                },
+              ),
+              kNormalHeight,
+            ],
+          )
       ],
     );
   }
 }
 
 class PasswordForm extends StatefulWidget {
-  const PasswordForm({Key? key, required this.passwordController, required this.newPasswordController, required this.confirmPasswordController}) : super(key: key);
+  const PasswordForm(
+      {Key? key,
+      required this.passwordController,
+      required this.newPasswordController,
+      required this.confirmPasswordController})
+      : super(key: key);
 
   final TextEditingController passwordController;
   final TextEditingController newPasswordController;
@@ -202,4 +210,3 @@ class _PasswordFormState extends State<PasswordForm> {
     );
   }
 }
-
