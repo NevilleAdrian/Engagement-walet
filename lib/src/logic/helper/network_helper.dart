@@ -73,6 +73,7 @@ class NetworkHelper {
     request.fields['phoneNumber'] = phone;
     request.fields['password'] = password;
     request.fields['userId'] = userId;
+    request.fields['CustomerUniqueName'] = 'userId';
 
     var multipartFile = http.MultipartFile('file', stream, length,
         filename: basename(image.path), contentType: MediaType('image', 'png'));

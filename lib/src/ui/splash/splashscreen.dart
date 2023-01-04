@@ -18,8 +18,7 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-
-  HiveRepository _hiveRepository = HiveRepository();
+  final HiveRepository _hiveRepository = HiveRepository();
 
   @override
   void initState() {
@@ -36,12 +35,9 @@ class _SplashScreenState extends State<SplashScreen> {
 
     try {
       appModel = _hiveRepository.get<AppModel>(key: 'token', name: kTokenName);
-
     } catch (ex) {
       print(ex);
     }
-
-
 
     if (appModel?.token! == null) {
       navigateReplaces(context, const OnBoardingScreen());
@@ -58,8 +54,8 @@ class _SplashScreenState extends State<SplashScreen> {
         color: primaryColor,
         child: Center(
             child: SvgPicture.asset(
-            Assets.logo,
-              height: 100,
+          Assets.logo,
+          height: 100,
         )),
       ),
     );

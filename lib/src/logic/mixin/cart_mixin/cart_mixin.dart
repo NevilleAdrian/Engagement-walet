@@ -264,27 +264,28 @@ class CartMixin extends ChangeNotifier {
   }
 
   // Get Payment Options
-  Future<List<PaymentOptions>> getPaymentOptions(
+  // Future<List<PaymentOptions>> getPaymentOptions(
+  Future<dynamic> getPaymentOptions(
     BuildContext context,
   ) async {
     try {
-      setIsLoading(true);
-      notifyListeners();
+      // setIsLoading(true);
+      // notifyListeners();
 
-      var data =
-          await _helper.getPaymentOptions(AuthMixin.auth(context).token!);
-      setIsLoading(false);
-      notifyListeners();
-      final result =
-          (data as List).map((e) => PaymentOptions.fromJson(e)).toList();
-
-      setPaymentOptions(result);
-      notifyListeners();
+      // var data =
+      //     await _helper.getPaymentOptions(AuthMixin.auth(context).token!);
+      // setIsLoading(false);
+      // notifyListeners();
+      // final result =
+      //     (data as List).map((e) => PaymentOptions.fromJson(e)).toList();
+      //
+      // setPaymentOptions(result);
+      // notifyListeners();
 
       openDialog(context, const StorePopUp());
 
       //Return result
-      return result;
+      // return result;
     } catch (ex) {
       setIsLoading(false);
       notifyListeners();
